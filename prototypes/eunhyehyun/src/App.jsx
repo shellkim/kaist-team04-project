@@ -1,17 +1,36 @@
 import { useMemo, useState } from "react";
 import {
-  REASONS,
-  buildSummary,
-  choiceLabel,
+  ADD_ANOTHER,
+  ADD_SUB,
+  ADD_TITLE,
+  ALARM_MAKE,
+  ALARM_SAVE,
+  AVOID_TITLE,
+  CARE_ICON,
+  CARE_TITLE,
+  CLEAR_TOAST,
+  DISCLAIMER,
+  FORECAST_ACTION,
+  FORECAST_ICON,
+  FORECAST_METRICS,
+  FORECAST_TITLE,
+  GROUPS,
+  HOSPITAL,
+  START_CARE,
+  allDosClear,
+  setAlarm,
+  careHeadline,
   createId,
-  emptyState,
-  formatAmount,
+  filterProcedures,
+  findGroup,
+  formatHeaderDate,
   loadState,
-  reasonText,
+  progress,
   saveState,
-  sortNewest,
-  spokenSummary,
+  statusLine,
   todayISO,
+  todayList,
+  toggleDone,
 } from "./storage.js";
 
 function persist(next) {
@@ -21,412 +40,311 @@ function persist(next) {
 
 export function App() {
   const [state, setState] = useState(() => loadState());
-  const [screen, setScreen] = useState("home");
-  const [savedSummary, setSavedSummary] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [toastOpen, setToastOpen] = useState(false);
+  const [alarmSlot, setAlarmSlot] = useState(null);
+  const list = useMemo(() => todayList(state.procedures), [state.procedures]);
+  const { done, total } = progress(list, state);
+  const clear = allDosClear(list, state);
 
-  const treatments = useMemo(() => sortNewest(state.treatments), [state.treatments]);
-  const decisions = useMemo(() => sortNewest(state.decisions), [state.decisions]);
-  const latestTreatment = treatments[0];
-  const latestDecision = decisions[0];
-
-  function addTreatment(treatment) {
-    setState((prev) =>
-      persist({
-        ...prev,
-        treatments: [...prev.treatments, treatment],
-      }),
-    );
-    setScreen("home");
-  }
-
-  function addDecision(decision) {
-    setState((prev) =>
-      persist({
-        ...prev,
-        decisions: [...prev.decisions, decision],
-      }),
-    );
-    setSavedSummary(decision.summary);
-    setScreen("saved");
-  }
-
-  if (treatments.length === 0) {
-    return (
-      <Shell>
-        <EmptyTreatment onSave={addTreatment} />
-      </Shell>
-    );
-  }
-
-  if (screen === "add") {
-    return (
-      <Shell>
-        <TreatmentForm
-          title="시술 추가"
-          onSave={addTreatment}
-          onCancel={() => setScreen("home")}
-        />
-      </Shell>
-    );
-  }
-
-  if (screen === "decide") {
-    return (
-      <Shell>
-        <DecisionCard
-          treatments={treatments}
-          decisions={decisions}
-          onSave={addDecision}
-          onCancel={() => setScreen("home")}
-        />
-      </Shell>
-    );
-  }
-
-  if (screen === "saved") {
-    return (
-      <Shell>
-        <SavedView
-          summary={savedSummary}
-          spoken={spokenSummary({ treatments, decisions })}
-          onHome={() => setScreen("home")}
-        />
-      </Shell>
-    );
-  }
-
-  return (
-    <Shell>
-      <Home
-        treatments={treatments}
-        decisions={decisions}
-        latestTreatment={latestTreatment}
-        latestDecision={latestDecision}
-        onDecide={() => setScreen("decide")}
-        onAdd={() => setScreen("add")}
-      />
-    </Shell>
-  );
-}
-
-function Shell({ children }) {
-  return (
-    <div className="page">
-      <header className="brand">
-        <p className="eyebrow">나만 보는 기록</p>
-        <h1>지금 받을 이유 / 미룰 이유</h1>
-      </header>
-      {children}
-    </div>
-  );
-}
-
-function EmptyTreatment({ onSave }) {
-  return (
-    <section className="card">
-      <p className="lede">병원 상담 전에, 내 이력으로 결정한다.</p>
-      <p className="empty-prompt">마지막 시술 하나만 적어 주세요.</p>
-      <TreatmentForm onSave={onSave} submitLabel="시술 저장" />
-    </section>
-  );
-}
-
-function Home({ treatments, decisions, latestTreatment, latestDecision, onDecide, onAdd }) {
-  const summary = buildSummary({
-    treatments,
-    decisions,
-    draft: latestDecision,
-  });
-
-  return (
-    <section className="card">
-      <p className="section-label">상담 전에 보는 요약</p>
-      <pre className="summary">{summary}</pre>
-      {latestDecision ? (
-        <p className="spoken">{spokenSummary({ treatments, decisions: [latestDecision] })}</p>
-      ) : (
-        <p className="hint">아직 결정이 없습니다. 이력을 보고 이번엔 받을지 미룰지 남겨 주세요.</p>
-      )}
-
-      <article className="block">
-        <p className="section-label">마지막 시술</p>
-        <TreatmentLine treatment={latestTreatment} />
-      </article>
-
-      <article className="block">
-        <p className="section-label">마지막 결정</p>
-        {latestDecision ? (
-          <p className="line">
-            {latestDecision.date} · {choiceLabel(latestDecision.choice)} · {reasonText(latestDecision)}
-          </p>
-        ) : (
-          <p className="muted">없음</p>
-        )}
-      </article>
-
-      <div className="actions">
-        <button type="button" className="primary" onClick={onDecide}>
-          지금 결정하기
-        </button>
-        <button type="button" className="ghost" onClick={onAdd}>
-          시술 추가
-        </button>
-      </div>
-    </section>
-  );
-}
-
-function TreatmentForm({ title, onSave, onCancel, submitLabel = "저장" }) {
-  const [date, setDate] = useState(todayISO());
-  const [name, setName] = useState("");
-  const [clinic, setClinic] = useState("");
-  const [amount, setAmount] = useState("");
-  const [note, setNote] = useState("");
-  const [error, setError] = useState("");
-
-  function handleSubmit(event) {
-    event.preventDefault();
-    if (!name.trim()) {
-      setError("시술명을 적어 주세요.");
-      return;
-    }
-    if (!date) {
-      setError("날짜를 선택해 주세요.");
-      return;
-    }
-    onSave({
-      id: createId(),
-      date,
-      name: name.trim(),
-      clinic: clinic.trim(),
-      amount: amount === "" ? "" : Number(amount),
-      note: note.trim(),
-      createdAt: new Date().toISOString(),
+  function onToggle(label) {
+    setState((prev) => {
+      const next = persist(toggleDone(prev, label));
+      const nextClear = allDosClear(todayList(next.procedures), next);
+      queueMicrotask(() => setToastOpen(nextClear));
+      return next;
     });
   }
 
-  return (
-    <form className="form" onSubmit={handleSubmit}>
-      {title ? <h2>{title}</h2> : null}
-      <label>
-        날짜
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-      </label>
-      <label>
-        시술명
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="보톡스, 스킨부스터, 리쥬란"
-          required
-        />
-      </label>
-      <label>
-        병원명 <span className="optional">선택</span>
-        <input value={clinic} onChange={(e) => setClinic(e.target.value)} />
-      </label>
-      <label>
-        금액 <span className="optional">선택</span>
-        <input
-          type="number"
-          min="0"
-          step="1000"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="480000"
-        />
-      </label>
-      <label>
-        그때 왜 받았는지
-        <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="한 줄이면 됩니다" />
-      </label>
-      {error ? <p className="error">{error}</p> : null}
-      <div className="actions">
-        <button type="submit" className="primary">
-          {submitLabel}
-        </button>
-        {onCancel ? (
-          <button type="button" className="ghost" onClick={onCancel}>
-            취소
-          </button>
-        ) : null}
-      </div>
-    </form>
-  );
-}
-
-function DecisionCard({ treatments, decisions, onSave, onCancel }) {
-  const recent = treatments.slice(0, 3);
-  const [choice, setChoice] = useState("");
-  const [reason, setReason] = useState("");
-  const [customReason, setCustomReason] = useState("");
-  const [summary, setSummary] = useState(() =>
-    buildSummary({ treatments, decisions, draft: null }),
-  );
-  const [error, setError] = useState("");
-
-  function refreshSummary(nextChoice, nextReason, nextCustom) {
-    setSummary(
-      buildSummary({
-        treatments,
-        decisions,
-        draft: nextChoice
-          ? { choice: nextChoice, reason: nextReason, customReason: nextCustom }
-          : null,
+  function onSaveProcedures(procedures) {
+    setState((prev) =>
+      persist({
+        ...prev,
+        procedures,
+        checks: { day: todayISO(), done: [] },
       }),
+    );
+    setModalOpen(false);
+  }
+
+  if (!state.procedures?.length) {
+    return (
+      <div className="page">
+        <header className="brand">
+          <p className="eyebrow">{formatHeaderDate()}</p>
+          <h1>{ADD_TITLE}</h1>
+          <p className="lede">{ADD_SUB}</p>
+        </header>
+        <ProcedureForm defaultDate={todayISO()} onSave={onSaveProcedures} />
+        <footer className="disclaimer">{DISCLAIMER}</footer>
+      </div>
     );
   }
 
-  function handleSubmit(event) {
-    event.preventDefault();
-    if (!choice) {
-      setError("받는다 또는 미룬다를 골라 주세요.");
-      return;
-    }
-    if (!reason) {
-      setError("이유를 골라 주세요.");
-      return;
-    }
-    if (reason === "기타" && !customReason.trim()) {
-      setError("기타 이유를 적어 주세요.");
-      return;
-    }
-    const decision = {
-      id: createId(),
-      date: todayISO(),
-      choice,
-      reason,
-      customReason: reason === "기타" ? customReason.trim() : "",
-      summary: summary.trim(),
-      createdAt: new Date().toISOString(),
-    };
-    onSave(decision);
-  }
-
   return (
-    <form className="card form" onSubmit={handleSubmit}>
-      <h2>지금 결정하기</h2>
-      <p className="section-label">상담 전에 보는 요약</p>
-      <textarea
-        className="summary-edit"
-        value={summary}
-        onChange={(e) => setSummary(e.target.value)}
-        rows={4}
-      />
+    <div className="page home">
+      <header className="brand">
+        <h1>
+          {formatHeaderDate()} · {statusLine(state.procedures)}
+        </h1>
+        <p className="lede">{careHeadline(state.procedures)}</p>
+      </header>
 
-      <p className="section-label">최근 이력</p>
-      <ul className="history">
-        {recent.map((item) => (
-          <li key={item.id}>
-            <TreatmentLine treatment={item} />
-          </li>
-        ))}
-      </ul>
-
-      <fieldset>
-        <legend>이번엔</legend>
-        <div className="choice-row">
-          <ChoiceButton
-            selected={choice === "accept"}
-            onClick={() => {
-              setChoice("accept");
-              refreshSummary("accept", reason, customReason);
-            }}
-          >
-            받는다
-          </ChoiceButton>
-          <ChoiceButton
-            selected={choice === "defer"}
-            onClick={() => {
-              setChoice("defer");
-              refreshSummary("defer", reason, customReason);
-            }}
-          >
-            미룬다
-          </ChoiceButton>
+      <section className="card forecast" aria-label={FORECAST_TITLE}>
+        <div className="forecast-head">
+          <p className="section-label">
+            <span className="section-icon" aria-hidden="true">
+              {FORECAST_ICON}
+            </span>
+            {FORECAST_TITLE}
+            <span className="tag">예시</span>
+          </p>
         </div>
-      </fieldset>
+        <div className="metrics">
+          {FORECAST_METRICS.map((metric) => (
+            <div key={metric.id} className={`metric metric-${metric.id}`}>
+              <p className="metric-label">{metric.label}</p>
+              <p className="metric-value">{metric.value}</p>
+              <p className="metric-hint">{metric.hint}</p>
+            </div>
+          ))}
+        </div>
+        <p className="forecast-action">{FORECAST_ACTION}</p>
+      </section>
 
-      <fieldset>
-        <legend>이유</legend>
-        {REASONS.map((item) => (
-          <label key={item} className="radio">
-            <input
-              type="radio"
-              name="reason"
-              value={item}
-              checked={reason === item}
-              onChange={() => {
-                setReason(item);
-                refreshSummary(choice, item, customReason);
-              }}
-            />
-            {item}
-          </label>
-        ))}
-        {reason === "기타" ? (
-          <input
-            value={customReason}
-            onChange={(e) => {
-              setCustomReason(e.target.value);
-              refreshSummary(choice, "기타", e.target.value);
-            }}
-            placeholder="직접 입력"
-          />
+      <section className="card care" aria-label={CARE_TITLE}>
+        {list.notes.length > 0 ? (
+          <div className="avoid" aria-label={AVOID_TITLE}>
+            <p className="avoid-title">{AVOID_TITLE}</p>
+            <p className="avoid-body">{list.notes.join(" · ")}</p>
+          </div>
         ) : null}
-      </fieldset>
 
-      {error ? <p className="error">{error}</p> : null}
-      <div className="actions">
-        <button type="submit" className="primary">
-          결정 저장
-        </button>
-        <button type="button" className="ghost" onClick={onCancel}>
-          취소
-        </button>
-      </div>
-    </form>
-  );
-}
+        <p className="section-label">
+          <span className="section-icon" aria-hidden="true">
+            {CARE_ICON}
+          </span>
+          {CARE_TITLE} ({done}/{total} 완료)
+        </p>
+        {clear ? (
+          <p className="all-clear" role="status">
+            오늘 케어 All Clear
+          </p>
+        ) : null}
+        <ul className="todo-list">
+          {list.slots.map((item) => {
+            const checked = state.checks.done.includes(item.text);
+            const customTime = state.alarms?.[item.id];
+            return (
+              <li key={item.id} className="slot">
+                <div className="slot-meta">
+                  <span className="slot-period">{item.label}</span>
+                  {item.alarm ? (
+                    <button
+                      type="button"
+                      className={customTime ? "slot-time" : "slot-bell"}
+                      aria-label={`${item.label} ${ALARM_MAKE}`}
+                      onClick={() => setAlarmSlot(item)}
+                    >
+                      <span aria-hidden="true">🔔</span>
+                      {customTime ? customTime : null}
+                    </button>
+                  ) : (
+                    <span className="slot-time">
+                      <span aria-hidden="true">🔔</span>
+                      {item.time}
+                    </span>
+                  )}
+                </div>
+                <label className={checked ? "todo done" : "todo"}>
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => onToggle(item.text)}
+                  />
+                  <span>{item.text}</span>
+                </label>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
 
-function SavedView({ summary, spoken, onHome }) {
-  return (
-    <section className="card">
-      <p className="section-label">저장된 한 줄</p>
-      <pre className="summary">{summary}</pre>
-      {spoken ? <p className="spoken">{spoken}</p> : null}
-      <p className="hint">공유는 없습니다. 다음에 앱을 열면 이 문장이 홈에 있습니다.</p>
-      <div className="actions">
-        <button type="button" className="primary" onClick={onHome}>
-          홈으로
-        </button>
-      </div>
-    </section>
-  );
-}
+      {list.n != null && list.n <= 6 ? <p className="hospital">{HOSPITAL}</p> : null}
 
-function TreatmentLine({ treatment }) {
-  const amount = formatAmount(treatment.amount);
-  return (
-    <div>
-      <p className="line">
-        {treatment.date} · {treatment.name}
-        {amount ? ` · ${amount}` : ""}
-        {treatment.clinic ? ` · ${treatment.clinic}` : ""}
-      </p>
-      {treatment.note ? <p className="muted">그때: {treatment.note}</p> : null}
+      <button type="button" className="fab" onClick={() => setModalOpen(true)}>
+        <span className="fab-plus">+</span>
+        {ADD_ANOTHER}
+      </button>
+
+      {modalOpen ? (
+        <div className="modal-backdrop" role="presentation" onClick={() => setModalOpen(false)}>
+          <div
+            className="modal"
+            role="dialog"
+            aria-labelledby="add-procedure-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <ProcedureForm
+              titleId="add-procedure-title"
+              defaultDate={todayISO()}
+              onSave={onSaveProcedures}
+              onCancel={() => setModalOpen(false)}
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {alarmSlot ? (
+        <AlarmForm
+          slot={alarmSlot}
+          initial={state.alarms?.[alarmSlot.id] ?? ""}
+          onSave={(time) => {
+            setState((prev) => persist(setAlarm(prev, alarmSlot.id, time)));
+            setAlarmSlot(null);
+          }}
+          onCancel={() => setAlarmSlot(null)}
+        />
+      ) : null}
+
+      {toastOpen ? (
+        <p className="toast" role="status">
+          {CLEAR_TOAST}
+        </p>
+      ) : null}
+
+      <footer className="disclaimer">{DISCLAIMER}</footer>
     </div>
   );
 }
 
-function ChoiceButton({ selected, onClick, children }) {
+function AlarmForm({ slot, initial, onSave, onCancel }) {
+  const [time, setTime] = useState(initial || "08:00");
+
+  function submit(event) {
+    event.preventDefault();
+    if (!time) return;
+    onSave(time);
+  }
+
   return (
-    <button
-      type="button"
-      className={selected ? "choice selected" : "choice"}
-      onClick={onClick}
-    >
-      {children}
-    </button>
+    <div className="modal-backdrop" role="presentation" onClick={onCancel}>
+      <div
+        className="modal"
+        role="dialog"
+        aria-labelledby="alarm-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <form className="card form" onSubmit={submit}>
+          <p className="section-label" id="alarm-title">
+            {slot.label} {ALARM_MAKE}
+          </p>
+          <label>
+            시각
+            <input
+              type="time"
+              value={time}
+              onChange={(event) => setTime(event.target.value)}
+              required
+            />
+          </label>
+          <p className="alarm-note">알림은 예시입니다. 실제 푸시는 보내지 않습니다.</p>
+          <div className="form-actions split">
+            <button type="button" className="ghost" onClick={onCancel}>
+              닫기
+            </button>
+            <button type="submit">{ALARM_SAVE}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function ProcedureForm({ titleId, defaultDate, onSave, onCancel }) {
+  const [date, setDate] = useState(defaultDate);
+  const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState([]);
+  const matches = filterProcedures(query);
+
+  function toggleName(name) {
+    setSelected((prev) =>
+      prev.includes(name) ? prev.filter((item) => item !== name) : [...prev, name],
+    );
+  }
+
+  function submit(event) {
+    event.preventDefault();
+    if (!date || selected.length === 0) return;
+    const createdAt = new Date().toISOString();
+    onSave(
+      selected.map((name) => ({
+        id: createId(),
+        date,
+        name,
+        groupId: findGroup(name).id,
+        createdAt,
+      })),
+    );
+  }
+
+  return (
+    <form className="card form add-procedure" onSubmit={submit}>
+      <p className="section-label" id={titleId}>
+        받으신 시술
+      </p>
+      <label>
+        시술 찾기
+        <input
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="리쥬란, 피코토닝…"
+        />
+      </label>
+      {GROUPS.map((group) => {
+        const names = group.names.filter((name) =>
+          matches.some((item) => item.name === name),
+        );
+        if (names.length === 0) return null;
+        return (
+          <fieldset key={group.id} className="chip-group">
+            <legend>{group.label}</legend>
+            <div className="chips">
+              {names.map((name) => (
+                <button
+                  key={name}
+                  type="button"
+                  className={selected.includes(name) ? "chip selected" : "chip"}
+                  aria-pressed={selected.includes(name)}
+                  onClick={() => toggleName(name)}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        );
+      })}
+      <label>
+        시술받은 날
+        <input
+          type="date"
+          value={date}
+          onChange={(event) => setDate(event.target.value)}
+          required
+        />
+      </label>
+      <div className={onCancel ? "form-actions split" : "form-actions"}>
+        {onCancel ? (
+          <button type="button" className="ghost" onClick={onCancel}>
+            닫기
+          </button>
+        ) : null}
+        <button type="submit" disabled={selected.length === 0}>
+          {START_CARE}
+        </button>
+      </div>
+    </form>
   );
 }
