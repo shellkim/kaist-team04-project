@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 피부 시술 이력 기록 - P0 프로토타입</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- 헤더 -->
+    <header class="header">
+      <h1>AI 피부 시술 이력 기록</h1>
+      <p class="subtitle">자연어로 대화하며 시술 경험을 기록하세요</p>
+      <div class="status-indicator">
+        <span id="api-status" class="status-dot"></span>
+        <span id="api-status-text">상태 확인 중...</span>
+      </div>
+    </header>
+
+    <!-- 메인 콘텐츠 -->
+    <main>
+      <!-- 탭 네비게이션 -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="input">대화</button>
+        <button class="tab-btn" data-tab="records">저장된 기록</button>
+      </div>
+
+      <!-- 탭 1: 대화 및 입력 -->
+      <div id="input-tab" class="tab-content active">
+        <!-- 입력 영역 -->
+        <section class="input-section">
+          <div class="form-group">
+            <label for="user-input">피부 시술 경험을 이야기해주세요:</label>
+            <textarea
+              id="user-input"
+              placeholder="예: 2025년 여름에 보톡스 맞고, 작년 초에는 필러 시술했어. 효과는 좋았는데..."
+              rows="4"
+            ></textarea>
+          </div>
+
+          <button id="extract-btn" class="btn btn-primary">
+            <span class="btn-text">AI로 추출</span>
+            <span class="btn-loading" style="display:none;">처리 중...</span>
+          </button>
+
+          <!-- 오류 메시지 -->
+          <div id="error-message" class="error-message" style="display:none;"></div>
+        </section>
+
+        <!-- 재질문 영역 -->
+        <section id="reask-section" class="reask-section" style="display:none;">
+          <h3>추가 정보 확인</h3>
+          <div id="reask-questions"></div>
+          <button id="proceed-to-table-btn" class="btn btn-secondary">결과 확인</button>
+        </section>
+
+        <!-- 추출 결과 테이블 -->
+        <section id="result-section" class="result-section" style="display:none;">
+          <h3>추출 결과</h3>
+          <div class="table-wrapper">
+            <table id="treatments-table" class="treatments-table">
+              <thead>
+                <tr>
+                  <th>선택</th>
+                  <th>시술명</th>
+                  <th>시술 시기</th>
+                  <th>비용</th>
+                  <th>통증</th>
+                  <th>효과</th>
+                  <th>만족도</th>
+                  <th>작업</th>
+                </tr>
+              </thead>
+              <tbody id="table-body">
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 저장 버튼 -->
+          <div class="button-group">
+            <button id="save-btn" class="btn btn-success">선택한 항목 저장</button>
+            <button id="reset-btn" class="btn btn-default">처음부터</button>
+          </div>
+
+          <!-- 저장 결과 -->
+          <div id="save-result" class="save-result" style="display:none;"></div>
+        </section>
+      </div>
+
+      <!-- 탭 2: 저장된 기록 -->
+      <div id="records-tab" class="tab-content">
+        <section class="records-section">
+          <h3>저장된 시술 이력</h3>
+          <div id="records-list" class="records-list">
+            <p class="empty-message">저장된 기록이 없습니다.</p>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- 수정 모달 -->
+    <div id="edit-modal" class="modal" style="display:none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>시술 정보 수정</h3>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="edit-form">
+            <div class="form-group">
+              <label for="edit-treatment-name">시술명 *</label>
+              <input type="text" id="edit-treatment-name" required>
+            </div>
+
+            <div class="form-group">
+              <label for="edit-treatment-date">시술 시기 *</label>
+              <input type="text" id="edit-treatment-date" placeholder="예: 2025년 여름, 작년 초" required>
+            </div>
+
+            <div class="form-group">
+              <label for="edit-cost">비용 (선택)</label>
+              <input type="number" id="edit-cost" placeholder="비용을 입력하세요 (원)">
+            </div>
+
+            <div class="form-group">
+              <label for="edit-pain-level">통증 (선택)</label>
+              <input type="text" id="edit-pain-level" placeholder="예: 약함, 중간, 강함 또는 1-10">
+            </div>
+
+            <div class="form-group">
+              <label for="edit-effect">효과 (선택)</label>
+              <input type="text" id="edit-effect" placeholder="예: 주름 개선, 피부 톤 밝아짐">
+            </div>
+
+            <div class="form-group">
+              <label for="edit-satisfaction">만족도 (선택)</label>
+              <input type="number" id="edit-satisfaction" min="1" max="5" placeholder="1-5">
+            </div>
+
+            <!-- 검증 오류 -->
+            <div id="edit-error" class="error-message" style="display:none;"></div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button id="edit-save-btn" class="btn btn-primary">저장</button>
+          <button id="edit-cancel-btn" class="btn btn-default">취소</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 푸터 -->
+    <footer class="footer">
+      <p>P0 프로토타입 | AI 대화 기반 시술 이력 기록</p>
+      <p class="footer-note">주의: 이 프로토타입은 테스트 목적으로만 사용됩니다. 실제 의료 기록으로 사용하지 마세요.</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
