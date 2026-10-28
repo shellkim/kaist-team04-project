@@ -1,4 +1,4 @@
-export const STORAGE_KEY = "eunhye.decision-log.v1";
+export const STORAGE_KEY = "eunhyehyun.decision-log.v1";
 
 export const REASONS = [
   "효과가 떨어진 것 같다",

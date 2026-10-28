@@ -21,7 +21,7 @@ Last updated: 2026-10-07
 | Member | File | Written on | Causes listed |
 |---|---|---|---|
 | Solbi Kim | `docs/premortem/solbi Kim.md` | 2026-10-07 | 6 |
-| Eunhye Hyun | `docs/premortem/eunhye.md` | 2026-10-07 | 5 |
+| Eunhye Hyun | `docs/premortem/eunhyehyun.md` | 2026-10-07 | 5 |
 | 이다솜 | `docs/premortem/dasomlee.md` | 2026-10-07 | 5 |
 | 김소라 | `docs/premortem/sorakim.md` | 2026-10-07 | 7 |
 

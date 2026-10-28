@@ -7,7 +7,7 @@
 ## Run
 
 ```bash
-cd prototypes/eunhye
+cd prototypes/eunhyehyun
 npm install
 npm run dev
 ```
