@@ -1,0 +1,557 @@
+<title>내 1년을 설계해주는 언니</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: one phone-width column centered on the page; each step is a full card that replaces the last. */
+:root{
+  --bg:#F3F1EE; --surface:#FFFFFF; --surface-2:#EAE6E1;
+  --ink:#231F21; --ink-2:#6B6367; --line:#D9D3CD;
+  --accent:#7A4B63; --accent-ink:#FFFFFF; --accent-soft:#F0E4EA;
+  --sage:#5F8370; --warn:#B5651D; --warn-soft:#F6E4D4;
+  --ph-m:#E8C9CF; --ph-f:#D4E3D8; --ph-o:#F1E2B8; --ph-l:#DCD6E6;
+  --display:"Gowun Batang","Nanum Myeongjo",Georgia,serif;
+  --body:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --radius:18px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#1B1719; --surface:#262022; --surface-2:#332B2E;
+    --ink:#EFE8E6; --ink-2:#AFA3A8; --line:#443A3E;
+    --accent:#CD92AE; --accent-ink:#2A1A22; --accent-soft:#3A2B33;
+    --sage:#8FB7A1; --warn:#E0955A; --warn-soft:#4A3324;
+    --ph-m:#5A3A41; --ph-f:#2F4A3C; --ph-o:#5A4C2A; --ph-l:#3D3750;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#1B1719; --surface:#262022; --surface-2:#332B2E;
+  --ink:#EFE8E6; --ink-2:#AFA3A8; --line:#443A3E;
+  --accent:#CD92AE; --accent-ink:#2A1A22; --accent-soft:#3A2B33;
+  --sage:#8FB7A1; --warn:#E0955A; --warn-soft:#4A3324;
+  --ph-m:#5A3A41; --ph-f:#2F4A3C; --ph-o:#5A4C2A; --ph-l:#3D3750;
+}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink); font-family:var(--body); font-size:15px; line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:16px;
+}
+*{box-sizing:border-box}
+.phone{max-width:420px; margin:0 auto; display:flex; flex-direction:column; gap:14px}
+.top{display:flex; align-items:center; justify-content:space-between; gap:8px}
+.brand{font-family:var(--display); font-size:15px; letter-spacing:.02em; color:var(--ink-2)}
+.steps{display:flex; gap:5px}
+.steps i{width:7px; height:7px; border-radius:50%; background:var(--line); display:block}
+.steps i.on{background:var(--accent)}
+.card{background:var(--surface); border-radius:var(--radius); padding:22px 20px; display:flex; flex-direction:column; gap:16px}
+.screen[hidden]{display:none!important}
+.unni{display:flex; gap:10px; align-items:flex-start}
+.unni .face{flex:none; width:36px; height:36px; border-radius:50%; background:var(--accent); color:var(--accent-ink); font-family:var(--display); font-weight:700; display:grid; place-items:center; font-size:14px}
+.unni p{margin:0; font-family:var(--display); font-size:17px; line-height:1.55; text-wrap:pretty}
+.unni p.stern{color:var(--accent)}
+h1{font-family:var(--display); font-size:30px; line-height:1.25; margin:0; text-wrap:balance}
+h2{font-family:var(--display); font-size:21px; margin:0; text-wrap:balance}
+.eyebrow{font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-2); margin:0}
+.sub{color:var(--ink-2); margin:0; font-size:14px}
+.lock{display:flex; gap:8px; align-items:center; font-size:12.5px; color:var(--ink-2); background:var(--surface-2); border-radius:10px; padding:8px 10px}
+.lock svg{flex:none}
+.btn{appearance:none; border:0; border-radius:12px; padding:13px 16px; font:inherit; font-weight:500; cursor:pointer; background:var(--accent); color:var(--accent-ink); width:100%}
+.btn.secondary{background:var(--surface-2); color:var(--ink)}
+.btn:focus-visible,.chip:focus-visible,.pick:focus-visible,input:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+.row{display:flex; gap:10px}
+.row .btn{flex:1}
+.grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+.thumb{aspect-ratio:1; border-radius:10px; background:var(--surface-2); overflow:hidden; display:grid; place-items:center; color:var(--ink-2); font-size:12px}
+.thumb img{width:100%; height:100%; object-fit:cover; display:block}
+.file{position:absolute; width:1px; height:1px; opacity:0; overflow:hidden}
+label.filebtn{display:block}
+.pick{text-align:left; background:var(--surface); border:1.5px solid var(--line); border-radius:14px; padding:14px; font:inherit; color:var(--ink); cursor:pointer; display:flex; flex-direction:column; gap:4px}
+.pick b{font-family:var(--display); font-size:17px; font-weight:700}
+.pick span{color:var(--ink-2); font-size:13.5px}
+.pick[aria-pressed="true"]{border-color:var(--accent); background:var(--accent-soft)}
+.pick.disabled{opacity:.4; pointer-events:none}
+.list{display:flex; flex-direction:column; gap:10px}
+.chips{display:flex; flex-wrap:wrap; gap:8px}
+.chip{border:1.5px solid var(--line); background:var(--surface); color:var(--ink); border-radius:999px; padding:7px 14px; font:inherit; font-size:14px; cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.sentence{font-family:var(--display); font-size:20px; min-height:1.6em; margin:0}
+.sentence small{font-family:var(--body); font-size:13px; color:var(--ink-2); display:block}
+.futures{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.future{display:flex; flex-direction:column; gap:8px}
+.future .frame{aspect-ratio:3/4; border-radius:14px; background:var(--surface-2); overflow:hidden; display:grid; place-items:center; text-align:center; padding:12px; color:var(--ink-2); font-size:12.5px; position:relative}
+.future .frame img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+.future .frame.chosen{outline:2px solid var(--accent); outline-offset:-2px}
+.future figcaption{font-family:var(--display); font-size:15px; text-align:center}
+.future .load{font-size:12px; color:var(--accent); text-align:center; cursor:pointer; text-decoration:underline}
+.field{display:flex; flex-direction:column; gap:6px}
+.field label{font-size:13px; color:var(--ink-2)}
+input[type=number],input[type=date],input[type=text]{font:inherit; font-size:16px; padding:11px 12px; border:1.5px solid var(--line); border-radius:12px; background:var(--surface); color:var(--ink); width:100%; font-variant-numeric:tabular-nums}
+input[type=range]{width:100%; accent-color:var(--accent)}
+.money{font-family:var(--display); font-size:26px; font-variant-numeric:tabular-nums}
+.routine{display:flex; flex-direction:column; gap:10px}
+.item{border:1.5px solid var(--line); border-radius:14px; padding:12px 14px; display:grid; grid-template-columns:1fr auto; gap:4px 10px; align-items:baseline}
+.item .name{font-weight:700}
+.item .cost{font-variant-numeric:tabular-nums; color:var(--ink-2); font-size:13.5px; text-align:right}
+.item .why{grid-column:1/-1; font-size:13.5px; color:var(--ink-2)}
+.item .why b{color:var(--accent); font-weight:500}
+.item.home{border-style:dashed}
+.total{display:flex; justify-content:space-between; align-items:baseline; border-top:1px solid var(--line); padding-top:12px}
+.total .money{font-size:22px}
+.total.over .money{color:var(--warn)}
+.fine{font-size:12px; color:var(--ink-2); margin:0}
+.price{display:flex; justify-content:space-between; align-items:baseline; background:var(--surface-2); border-radius:14px; padding:14px}
+.price ul{margin:0; padding-left:18px; color:var(--ink-2); font-size:13.5px}
+/* clock */
+.cal{display:grid; grid-template-columns:repeat(7,1fr); gap:4px; font-variant-numeric:tabular-nums}
+.cal .dow{font-size:11px; color:var(--ink-2); text-align:center; letter-spacing:.06em}
+.day{aspect-ratio:1; border-radius:9px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:12.5px; gap:2px; position:relative; background:var(--surface-2)}
+.day.empty{background:transparent}
+.day.m{background:var(--ph-m)} .day.f{background:var(--ph-f)} .day.o{background:var(--ph-o)} .day.l{background:var(--ph-l)}
+.day.today{outline:2px solid var(--accent); outline-offset:-2px; font-weight:700}
+.day .dot{width:7px; height:7px; border-radius:50%; background:var(--accent)}
+.day .dot.home{background:transparent; border:1.5px solid var(--accent)}
+.day .dot.done{background:var(--sage); border-color:var(--sage)}
+.legend{display:flex; flex-wrap:wrap; gap:8px 14px; font-size:12px; color:var(--ink-2)}
+.legend span{display:inline-flex; align-items:center; gap:5px}
+.legend i{width:12px; height:12px; border-radius:4px; display:inline-block}
+.gauge{height:10px; border-radius:999px; background:var(--surface-2); overflow:hidden}
+.gauge b{display:block; height:100%; background:var(--sage); width:0}
+.gauge.over b{background:var(--warn)}
+.upcoming{display:flex; flex-direction:column; gap:6px; font-size:14px}
+.upcoming div{display:flex; justify-content:space-between; gap:10px}
+.upcoming span{color:var(--ink-2); font-variant-numeric:tabular-nums}
+.sheet{border:1.5px solid var(--line); border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:10px}
+select{font:inherit; font-size:15px; padding:10px 12px; border:1.5px solid var(--line); border-radius:12px; background:var(--surface); color:var(--ink); width:100%}
+.log{display:flex; flex-direction:column; gap:6px; font-size:13.5px}
+.log div{display:flex; justify-content:space-between; gap:10px; color:var(--ink-2)}
+.log div b{color:var(--ink); font-weight:500}
+.toast{position:fixed; left:50%; bottom:calc(20px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); background:var(--ink); color:var(--bg); padding:10px 16px; border-radius:999px; font-size:13.5px; opacity:0; transition:opacity .25s; pointer-events:none}
+.toast.show{opacity:1}
+.note{font-size:13px; color:var(--ink-2); margin:0}
+.tabs{display:flex; gap:6px}
+.tabs button{flex:1; border:0; background:var(--surface-2); color:var(--ink-2); border-radius:10px; padding:9px; font:inherit; font-size:13.5px; cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--accent); color:var(--accent-ink)}
+.foot{display:flex; justify-content:space-between; font-size:12px; color:var(--ink-2); padding:0 4px}
+.foot button{background:none; border:0; color:var(--ink-2); font:inherit; font-size:12px; cursor:pointer; text-decoration:underline}
+@media (prefers-reduced-motion: reduce){ .toast{transition:none} }
+</style>
+
+<div class="phone">
+  <div class="top">
+    <span class="brand">언니</span>
+    <div class="steps" id="steps" aria-hidden="true"></div>
+  </div>
+
+  <!-- S0 -->
+  <section class="card screen" id="s0">
+    <p class="eyebrow">프로토타입 v0.1 · 첫날 + 시계</p>
+    <h1>내 1년을 설계해주는 언니</h1>
+    <p class="sub">하루가 쌓여 1년이 되고, 1년이 쌓여 10년 뒤의 나를 만든다.</p>
+    <div class="unni"><span class="face">언</span><p>안녕, 나는 네 1년을 같이 짤 언니야. 네 사진은 이 폰 밖으로 절대 안 나가. 시작할까?</p></div>
+    <button class="btn" onclick="go('s1')">시작할게</button>
+    <button class="btn secondary" onclick="go('s9')">둘째 날부터 보기 (시계)</button>
+  </section>
+
+  <!-- S1 -->
+  <section class="card screen" id="s1" hidden>
+    <h2>사진 고르기</h2>
+    <p class="sub">정면, 민낯, 밝은 데서 찍은 사진이면 좋아. 3장에서 5장.</p>
+    <div class="grid" id="thumbs">
+      <div class="thumb">비어 있음</div><div class="thumb">비어 있음</div><div class="thumb">비어 있음</div>
+    </div>
+    <label class="filebtn"><input class="file" type="file" id="photos" accept="image/*" multiple><span class="btn secondary" style="display:block;text-align:center">앨범에서 고르기</span></label>
+    <div class="lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>이 사진은 기기 안에서만 읽어요. 어디에도 올라가지 않아요.</div>
+    <button class="btn" id="s1next" onclick="go('s2')">이 사진으로</button>
+    <p class="note">사진 없이도 진행할 수 있어요. 그러면 강점은 네가 직접 골라.</p>
+  </section>
+
+  <!-- S2 -->
+  <section class="card screen" id="s2" hidden>
+    <div class="unni"><span class="face">언</span><p id="s2line">봤어. 네 얼굴에서 고유한 게 세 개 보여.</p></div>
+    <div class="list" id="strengths"></div>
+    <div class="row">
+      <button class="btn secondary" onclick="altStrengths()">다르게 보는데?</button>
+      <button class="btn" onclick="go('s3')">맞아, 다음</button>
+    </div>
+  </section>
+
+  <!-- S3 -->
+  <section class="card screen" id="s3" hidden>
+    <div class="unni"><span class="face">언</span><p>이 중에 나이 들어도 꼭 남기고 싶은 거, 하나나 둘만 골라. 다 지키려고 하면 또 급해져.</p></div>
+    <div class="list" id="keeps"></div>
+    <p class="note">고르지 않은 건 "놓아도 되는 것". 틀린 게 아니라 우선순위야.</p>
+    <button class="btn" id="s3next" onclick="go('s4')" disabled>이걸 지킬래</button>
+  </section>
+
+  <!-- S4 -->
+  <section class="card screen" id="s4" hidden>
+    <div class="unni"><span class="face">언</span><p>50대의 너를 떠올려 봐. 사람 말고 분위기로. 두세 개만.</p></div>
+    <p class="sentence" id="sentence"><small>고르면 문장이 만들어져</small></p>
+    <div class="chips" id="moods"></div>
+    <button class="btn" id="s4next" onclick="go('s5')" disabled>이 모습으로</button>
+  </section>
+
+  <!-- S5 -->
+  <section class="card screen" id="s5" hidden>
+    <div class="unni"><span class="face">언</span><p>10년 뒤 너야. 왼쪽은 시간이 그냥 흐른 너, 오른쪽은 네가 고른 너. 둘 다 너고, 둘 다 괜찮아.</p></div>
+    <div class="futures">
+      <figure class="future" style="margin:0">
+        <div class="frame" id="fNat"><span>자연 노화의 나<br><small>사전 렌더링 이미지를 불러오면 여기에 보여요</small></span></div>
+        <figcaption>자연 노화의 나</figcaption>
+        <label class="load"><input class="file" type="file" accept="image/*" data-target="fNat">이미지 불러오기 (기기 안)</label>
+      </figure>
+      <figure class="future" style="margin:0">
+        <div class="frame chosen" id="fMe"><span id="fMeText">내가 고른 나</span></div>
+        <figcaption>내가 고른 나</figcaption>
+        <label class="load"><input class="file" type="file" accept="image/*" data-target="fMe">이미지 불러오기 (기기 안)</label>
+      </figure>
+    </div>
+    <div class="lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>시연용 사전 렌더링. 실제 서비스에서는 기기 안에서 생성해요.</div>
+    <div class="row">
+      <button class="btn secondary" onclick="go('s4')">어휘를 바꿀래</button>
+      <button class="btn" onclick="go('s6')">오른쪽으로 가볼게</button>
+    </div>
+  </section>
+
+  <!-- S6 -->
+  <section class="card screen" id="s6" hidden>
+    <div class="unni"><span class="face">언</span><p class="stern">자, 여기서부터 내가 좀 엄해질게. 1년에 피부에 쓸 돈, 솔직하게. 성과급 다 쏟는 금액 말고, 10년 똑같이 쓸 수 있는 금액.</p></div>
+    <div class="field">
+      <label for="budget">연간 예산 (만원)</label>
+      <div class="money" id="budgetView">300만원</div>
+      <input type="range" id="budget" min="50" max="1000" step="10" value="300">
+      <input type="number" id="budgetNum" min="0" step="10" value="300" aria-label="연간 예산 직접 입력">
+    </div>
+    <div class="field">
+      <label>이미 하고 있는 시술이 있다면</label>
+      <div class="chips" id="existing"></div>
+    </div>
+    <button class="btn" onclick="buildRoutine();go('s7')">이 예산으로 짜줘</button>
+  </section>
+
+  <!-- S7 -->
+  <section class="card screen" id="s7" hidden>
+    <div class="unni"><span class="face">언</span><p id="s7line"></p></div>
+    <div class="routine" id="routine"></div>
+    <div class="total" id="total"><span>연간 합계</span><span class="money" id="sum"></span></div>
+    <p class="fine">언니는 의사가 아니야. 시술 결정은 전문의와 해. 언니는 네 1년의 균형을 봐. 주기와 비용은 일반적으로 알려진 범위를 기준으로 한 예시야.</p>
+    <div class="row">
+      <button class="btn secondary" onclick="go('s6')">예산 바꿀래</button>
+      <button class="btn" onclick="go('s8')">이 루틴으로 1년 가자</button>
+    </div>
+  </section>
+
+  <!-- S8 -->
+  <section class="card screen" id="s8" hidden>
+    <h2>1년 루틴 사용권</h2>
+    <div class="price"><div><b>연 39,000원</b><br><small style="color:var(--ink-2)">가격은 검토 중 (연 3~5만원대)</small></div>
+      <ul><li>1년 루틴</li><li>생리주기 시계</li><li>타이밍 알림</li><li>기록</li><li>분기 재분석</li></ul></div>
+    <div class="unni"><span class="face">언</span><p>1년 동안 내가 부를게. 너는 기록만 해.</p></div>
+    <button class="btn" onclick="go('s9')">1년 시작</button>
+    <p class="note">프로토타입이라 결제는 넘어가요.</p>
+  </section>
+
+  <!-- S9 -->
+  <section class="card screen" id="s9" hidden>
+    <div class="unni"><span class="face">언</span><p id="clockLine">마지막 생리 시작일을 알려줘. 그래야 시계를 맞출 수 있어.</p></div>
+    <div class="row">
+      <div class="field" style="flex:1"><label for="lastPeriod">마지막 생리 시작일</label><input type="date" id="lastPeriod"></div>
+      <div class="field" style="width:110px"><label for="cycleLen">평균 주기(일)</label><input type="number" id="cycleLen" min="21" max="40" value="28"></div>
+    </div>
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" id="tabCal" onclick="switchTab('cal')">이번 달</button>
+      <button role="tab" aria-selected="false" id="tabLog" onclick="switchTab('log')">기록</button>
+    </div>
+    <div id="calPane">
+      <p class="eyebrow" id="monthLabel"></p>
+      <div class="cal" id="cal"></div>
+      <div class="legend">
+        <span><i style="background:var(--ph-m)"></i>월경</span><span><i style="background:var(--ph-f)"></i>난포기</span>
+        <span><i style="background:var(--ph-o)"></i>배란기</span><span><i style="background:var(--ph-l)"></i>황체기</span>
+        <span><i style="background:var(--accent);border-radius:50%"></i>시술</span><span><i style="border:1.5px solid var(--accent);border-radius:50%"></i>홈케어</span>
+      </div>
+      <p class="eyebrow" style="margin-top:14px">다가오는 루틴</p>
+      <div class="upcoming" id="upcoming"></div>
+    </div>
+    <div id="logPane" hidden>
+      <div class="sheet">
+        <div class="field"><label for="logItem">무엇을</label><select id="logItem"></select></div>
+        <div class="row">
+          <div class="field" style="flex:1"><label for="logDate">언제</label><input type="date" id="logDate"></div>
+          <div class="field" style="width:120px"><label for="logCost">얼마에 (만원)</label><input type="number" id="logCost" min="0" step="1" placeholder="선택"></div>
+        </div>
+        <button class="btn" onclick="addLog()">기록 저장</button>
+      </div>
+      <p class="eyebrow" style="margin-top:14px">올해 기록</p>
+      <div class="log" id="logList"></div>
+    </div>
+    <div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--ink-2)"><span>올해 쓴 돈</span><span id="gaugeText"></span></div>
+      <div class="gauge" id="gauge"><b></b></div>
+    </div>
+    <button class="btn secondary" onclick="switchTab('log')">오늘 한 거 기록</button>
+    <button class="btn secondary" onclick="go('s10')">3개월 뒤에는?</button>
+  </section>
+
+  <!-- S10 -->
+  <section class="card screen" id="s10" hidden>
+    <p class="eyebrow">분기 재분석 · 다음 단계(P2)</p>
+    <h2>3개월마다 언니가 다시 본다</h2>
+    <p>사진을 다시 읽어(역시 기기 안에서) 한 줄만 말해. 점수 없음, 비교 없음.</p>
+    <div class="unni"><span class="face">언</span><p id="s10line">지키기로 한 눈매, 유지되고 있어. 피부 결은 스킨부스터 한 번 더 가면 돼.</p></div>
+    <button class="btn" onclick="go('s9')">시계로 돌아가기</button>
+    <button class="btn secondary" onclick="go('s0')">처음부터 다시</button>
+  </section>
+
+  <div class="foot"><span>사진은 기기 밖으로 나가지 않아요</span><button onclick="resetAll()">초기화</button></div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+// ---------- state ----------
+const S = {
+  strengths: [], keeps: [], moods: [], budget: 300, existing: [], routine: [], logs: [],
+  lastPeriod: null, cycleLen: 28,
+};
+const ORDER = ['s1','s2','s3','s4','s5','s6','s7','s8'];
+const DEMO_STRENGTHS = [
+  {k:'eye',  t:'또렷한 눈매',  d:'나이가 들어도 인상을 결정하는 자리야.'},
+  {k:'cheek',t:'광대의 선',    d:'이지적인 분위기는 여기서 와.'},
+  {k:'tex',  t:'피부 결',      d:'톤보다 결이 좋아. 지키기 쉬운 자산.'},
+];
+const ALL_STRENGTHS = [
+  ...DEMO_STRENGTHS,
+  {k:'nose', t:'콧대',        d:'옆얼굴의 중심. 잘 안 변하는 자산.'},
+  {k:'jaw',  t:'턱선',        d:'전체 윤곽의 인상을 잡아.'},
+  {k:'tone', t:'피부 톤',     d:'밝기보다 고른 게 중요해.'},
+  {k:'lip',  t:'입매',        d:'표정의 온도가 여기서 결정돼.'},
+  {k:'brow', t:'이마와 눈썹', d:'시선이 처음 머무는 곳.'},
+];
+const MOODS = ['이지적인','단정한','온화한','또렷한','우아한','활기찬','담백한','깊이 있는','밝은','차분한'];
+const EXISTING = ['울쎄라','보톡스','스킨부스터','레이저','필러','없음'];
+
+// 루틴 카탈로그: 비용은 일반적으로 알려진 범위의 예시(만원/연). serves = 지키는 강점.
+const CATALOG = [
+  {id:'spf',  name:'자외선 차단',       kind:'home', per:'매일',      cost:6,   serves:['*'],           why:'모든 시술의 효과를 지키는 바닥이야.'},
+  {id:'ret',  name:'레티놀·보습 홈케어', kind:'home', per:'매일 밤',   cost:14,  serves:['tex','tone'],  why:'결과 톤을 매일 조금씩 지켜.'},
+  {id:'sb',   name:'스킨부스터',        kind:'tx',   per:'분기 1회',  cost:100, serves:['tex','tone'],  why:'를 지키는 데 가장 직접적이야.', each:25, months:[2,5,8,11]},
+  {id:'btx',  name:'보톡스(눈가·이마)', kind:'tx',   per:'반기 1회',  cost:30,  serves:['eye','brow'],  why:'의 잔주름을 늦춰.', each:15, months:[3,9]},
+  {id:'ton',  name:'레이저 토닝',       kind:'tx',   per:'분기 1회',  cost:60,  serves:['tone','tex'],  why:'을 고르게 유지해.', each:15, months:[1,4,7,10]},
+  {id:'ult',  name:'리프팅(울쎄라급)',  kind:'tx',   per:'연 1회',    cost:150, serves:['cheek','jaw'], why:'을 지키는 가장 큰 한 방. 1년에 한 번이면 돼.', each:150, months:[4]},
+  {id:'fil',  name:'필러(소량)',        kind:'tx',   per:'연 1회',    cost:40,  serves:['nose','lip','cheek'], why:'의 볼륨을 조금만 보완해.', each:40, months:[6]},
+];
+const NAME = Object.fromEntries(ALL_STRENGTHS.map(s=>[s.k,s.t]));
+
+// ---------- helpers ----------
+const $ = id => document.getElementById(id);
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),1800); }
+function won(n){ return n.toLocaleString('ko-KR')+'만원'; }
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.hidden = s.id!==id);
+  const i = ORDER.indexOf(id);
+  $('steps').innerHTML = ORDER.map((_,j)=>`<i class="${j<=i?'on':''}"></i>`).join('');
+  $('steps').style.visibility = i>=0 ? 'visible':'hidden';
+  if(id==='s2') renderStrengths();
+  if(id==='s3') renderKeeps();
+  if(id==='s4') renderMoods();
+  if(id==='s5') $('fMeText').textContent = moodSentence() || '내가 고른 나';
+  if(id==='s9') renderClock();
+  if(id==='s10') renderS10();
+  window.scrollTo({top:0});
+}
+
+// ---------- S1 photos (local only: object URLs, never uploaded) ----------
+$('photos').addEventListener('change', e=>{
+  const files=[...e.target.files].slice(0,5);
+  const grid=$('thumbs'); grid.innerHTML='';
+  files.forEach(f=>{ const d=document.createElement('div'); d.className='thumb'; const img=document.createElement('img'); img.alt='선택한 사진'; img.src=URL.createObjectURL(f); d.appendChild(img); grid.appendChild(d); });
+  for(let i=files.length;i<3;i++){ const d=document.createElement('div'); d.className='thumb'; d.textContent='비어 있음'; grid.appendChild(d); }
+  S.photos = files.length;
+  $('s2line').textContent = files.length ? '봤어. 네 얼굴에서 고유한 게 세 개 보여.' : '사진 없이 가네. 그럼 네가 생각하는 네 강점을 세 개 골라줘.';
+  toast(files.length ? `${files.length}장, 기기 안에서만 읽었어` : '사진 없이 진행');
+});
+
+// ---------- S2 strengths ----------
+let altMode=false;
+function renderStrengths(){
+  if(!S.photos) altMode=true;
+  if(!altMode && !S.strengths.length) S.strengths = DEMO_STRENGTHS.map(s=>s.k);
+  const box=$('strengths'); box.innerHTML='';
+  const pool = altMode ? ALL_STRENGTHS : DEMO_STRENGTHS;
+  if(altMode) $('s2line').textContent='그래, 네 눈이 더 정확할 수 있어. 세 개 골라줘.';
+  pool.forEach(s=>{
+    const b=document.createElement('button'); b.className='pick'; b.type='button';
+    b.setAttribute('aria-pressed', S.strengths.includes(s.k));
+    b.innerHTML=`<b>${s.t}</b><span>${s.d}</span>`;
+    b.onclick=()=>{ if(!altMode) return;
+      const i=S.strengths.indexOf(s.k);
+      if(i>=0) S.strengths.splice(i,1); else if(S.strengths.length<3) S.strengths.push(s.k); else toast('세 개까지만');
+      renderStrengths(); };
+    box.appendChild(b);
+  });
+}
+function altStrengths(){ altMode=true; S.strengths=[]; renderStrengths(); }
+
+// ---------- S3 keeps ----------
+function renderKeeps(){
+  if(S.strengths.length<3 && altMode){ /* allow fewer but warn */ }
+  const box=$('keeps'); box.innerHTML='';
+  S.strengths.forEach(k=>{
+    const s=ALL_STRENGTHS.find(x=>x.k===k);
+    const b=document.createElement('button'); b.className='pick'; b.type='button';
+    b.setAttribute('aria-pressed', S.keeps.includes(k));
+    b.innerHTML=`<b>${s.t}</b><span>${S.keeps.includes(k)?'지킨다':'놓아도 된다'}</span>`;
+    b.onclick=()=>{ const i=S.keeps.indexOf(k); if(i>=0) S.keeps.splice(i,1); else if(S.keeps.length<2) S.keeps.push(k); else toast('둘까지만. 다 지키면 또 급해져'); renderKeeps(); };
+    box.appendChild(b);
+  });
+  $('s3next').disabled = S.keeps.length===0;
+}
+
+// ---------- S4 moods ----------
+function moodSentence(){
+  if(!S.moods.length) return '';
+  const w=S.moods.map(m=>m.replace(/인$|한$|은$/,'')); // 이지적인→이지적, 단정한→단정
+  const parts=S.moods.slice(0,-1).map(m=>m.replace(/인$/,'이고').replace(/한$/,'하고').replace(/은$/,'고'));
+  return [...parts, S.moods[S.moods.length-1]].join(' ') + ' 50대';
+}
+function renderMoods(){
+  const box=$('moods'); box.innerHTML='';
+  MOODS.forEach(m=>{ const b=document.createElement('button'); b.className='chip'; b.type='button'; b.textContent=m;
+    b.setAttribute('aria-pressed', S.moods.includes(m));
+    b.onclick=()=>{ const i=S.moods.indexOf(m); if(i>=0) S.moods.splice(i,1); else if(S.moods.length<3) S.moods.push(m); else toast('세 개까지만'); renderMoods(); };
+    box.appendChild(b); });
+  const s=moodSentence();
+  $('sentence').innerHTML = s ? s : '<small>고르면 문장이 만들어져</small>';
+  $('s4next').disabled = S.moods.length<2;
+}
+
+// ---------- S5 local images ----------
+document.querySelectorAll('input[data-target]').forEach(inp=>inp.addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const frame=$(inp.dataset.target); frame.querySelectorAll('img').forEach(i=>i.remove());
+  const img=document.createElement('img'); img.alt=''; img.src=URL.createObjectURL(f); frame.appendChild(img);
+}));
+
+// ---------- S6 budget ----------
+function syncBudget(v){ S.budget=Math.max(0,Math.round(v)); $('budget').value=Math.min(1000,S.budget); $('budgetNum').value=S.budget; $('budgetView').textContent=won(S.budget); }
+$('budget').addEventListener('input',e=>syncBudget(+e.target.value));
+$('budgetNum').addEventListener('input',e=>syncBudget(+e.target.value||0));
+(function(){ const box=$('existing'); EXISTING.forEach(x=>{ const b=document.createElement('button'); b.className='chip'; b.type='button'; b.textContent=x;
+  b.onclick=()=>{ if(x==='없음'){ S.existing=['없음']; } else { S.existing=S.existing.filter(v=>v!=='없음'); const i=S.existing.indexOf(x); i>=0?S.existing.splice(i,1):S.existing.push(x); }
+    [...box.children].forEach(c=>c.setAttribute('aria-pressed',S.existing.includes(c.textContent))); };
+  box.appendChild(b); }); })();
+
+// ---------- S7 routine (rule-based; budget is a hard ceiling) ----------
+function buildRoutine(){
+  const keeps = S.keeps.length ? S.keeps : S.strengths.slice(0,1);
+  const base = CATALOG.filter(c=>c.kind==='home' && (c.serves.includes('*') || c.serves.some(k=>keeps.includes(k))));
+  const tx = CATALOG.filter(c=>c.kind==='tx' && c.serves.some(k=>keeps.includes(k)))
+    .sort((a,b)=>{ const ea=S.existing.includes(a.name.split('(')[0]); const eb=S.existing.includes(b.name.split('(')[0]); if(ea!==eb) return ea?-1:1; return a.cost-b.cost; });
+  // 가장 직접적인 시술을 먼저, 예산 안에서 채운다. 리프팅은 예산이 넉넉할 때만.
+  let sum = base.reduce((s,c)=>s+c.cost,0); const picked=[...base];
+  for(const c of tx){ if(c.id==='ult' && S.budget<400) continue; if(sum+c.cost<=S.budget){ picked.push(c); sum+=c.cost; } }
+  S.routine=picked; S.sum=sum;
+  const tier = S.budget>=500?'rich':S.budget>=200?'mid':'tight';
+  const keepNames = keeps.map(k=>NAME[k]).join('이랑 ');
+  $('s7line').textContent = {
+    rich:`좋아. 근데 다 할 필요 없어. 네가 지키기로 한 건 ${keepNames}이잖아. 거기에 집중하자. 남는 건 안 써도 돼.`,
+    mid:`${won(S.budget)}이면 충분히 돼. 꼭 필요한 것만 넣었어. ${keepNames}을 지키는 데 직접 닿는 것들로.`,
+    tight:`이 예산이면 시술은 하나, 많아야 둘. 대신 홈케어로 지키는 거야. 패가망신 안 하면서도 되는 길이 있어.`,
+  }[tier];
+  const box=$('routine'); box.innerHTML='';
+  picked.forEach(c=>{
+    const served = c.serves.includes('*') ? '' : `<b>${c.serves.filter(k=>keeps.includes(k)).map(k=>NAME[k]).join('·')}</b>`;
+    const d=document.createElement('div'); d.className='item'+(c.kind==='home'?' home':'');
+    d.innerHTML=`<span class="name">${c.name}</span><span class="cost">${c.per} · 연 ${won(c.cost)}</span><span class="why">${served}${c.why}</span>`;
+    box.appendChild(d);
+  });
+  if(!picked.some(c=>c.kind==='tx')){ const d=document.createElement('div'); d.className='item home'; d.innerHTML=`<span class="name">시술 없음</span><span class="cost"></span><span class="why">이 예산에선 홈케어가 먼저야. 예산이 늘면 시술을 하나 넣자.</span>`; box.appendChild(d); }
+  $('sum').textContent = `${won(sum)} / ${won(S.budget)}`;
+  $('total').classList.toggle('over', sum>S.budget);
+  saveState();
+}
+
+// ---------- S9 clock ----------
+const PH = {m:'월경', f:'난포기', o:'배란기', l:'황체기'};
+function phaseOf(day, len){ // day: 1-based day of cycle
+  if(day<=5) return 'm'; const ov = Math.round(len-14); if(day<ov-1) return 'f'; if(day<=ov+1) return 'o'; return 'l';
+}
+function cycleDay(date){ if(!S.lastPeriod) return null; const d0=new Date(S.lastPeriod); const diff=Math.floor((date-d0)/864e5); return ((diff%S.cycleLen)+S.cycleLen)%S.cycleLen+1; }
+function scheduleFor(year){ // returns [{date, item, kind}]
+  const out=[]; const tx=S.routine.filter(c=>c.kind==='tx');
+  tx.forEach(c=>c.months.forEach(m=>{
+    let d=new Date(year, m-1, 8); // 기본 8일
+    if(S.lastPeriod){ // 황체기·월경이면 뒤로 밀어 난포기로
+      let n=0; while(n<40){ const p=phaseOf(cycleDay(d),S.cycleLen); if(p==='f'||p==='o') break; d=new Date(d.getTime()+864e5); n++; }
+    }
+    out.push({date:d, item:c, kind:'tx'});
+  }));
+  // 홈케어는 매주 월요일 점 하나로 표시
+  if(S.routine.some(c=>c.kind==='home')){ let d=new Date(year,0,1); while(d.getFullYear()===year){ if(d.getDay()===1) out.push({date:new Date(d), item:{name:'홈케어 점검'}, kind:'home'}); d=new Date(d.getTime()+864e5); } }
+  return out.sort((a,b)=>a.date-b.date);
+}
+function sameDay(a,b){ return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
+function renderClock(){
+  if(!S.routine.length){ buildRoutine(); }
+  const today=new Date(); const y=today.getFullYear(), m=today.getMonth();
+  $('monthLabel').textContent = `${y}년 ${m+1}월`;
+  if(!$('lastPeriod').value && S.lastPeriod) $('lastPeriod').value=S.lastPeriod;
+  $('cycleLen').value=S.cycleLen;
+  const first=new Date(y,m,1); const days=new Date(y,m+1,0).getDate();
+  const sched=scheduleFor(y);
+  const cal=$('cal'); cal.innerHTML='';
+  ['일','월','화','수','목','금','토'].forEach(d=>{ const e=document.createElement('div'); e.className='dow'; e.textContent=d; cal.appendChild(e); });
+  for(let i=0;i<first.getDay();i++){ const e=document.createElement('div'); e.className='day empty'; cal.appendChild(e); }
+  for(let d=1; d<=days; d++){
+    const date=new Date(y,m,d); const e=document.createElement('div'); e.className='day';
+    if(S.lastPeriod){ e.classList.add(phaseOf(cycleDay(date),S.cycleLen)); e.title=PH[phaseOf(cycleDay(date),S.cycleLen)]; }
+    if(sameDay(date,today)) e.classList.add('today');
+    e.innerHTML=`<span>${d}</span>`;
+    const ev=sched.filter(s=>sameDay(s.date,date));
+    ev.forEach(s=>{ const dot=document.createElement('i'); dot.className='dot '+(s.kind==='home'?'home':''); if(S.logs.some(l=>l.date===iso(date)&&(s.kind==='home'||l.item===s.item.name))) dot.classList.add('done'); e.appendChild(dot); });
+    cal.appendChild(e);
+  }
+  // upcoming + unni line
+  const up=sched.filter(s=>s.kind==='tx' && s.date>=new Date(y,m,today.getDate())).slice(0,3);
+  $('upcoming').innerHTML = up.length ? up.map(s=>`<div><b>${s.item.name}</b><span>${s.date.getMonth()+1}월 ${s.date.getDate()}일</span></div>`).join('') : '<div><span>올해 남은 시술 일정이 없어.</span></div>';
+  const todayPhase = S.lastPeriod ? phaseOf(cycleDay(today),S.cycleLen) : null;
+  let line;
+  if(!S.lastPeriod) line='마지막 생리 시작일을 알려줘. 그래야 시계를 맞출 수 있어.';
+  else if(!up.length) line='올해 시술은 다 했어. 홈케어만 지키자. 내년 루틴은 분기 재분석 뒤에 다시 짜.';
+  else { const s=up[0]; const dd=Math.round((s.date-today)/864e5);
+    line = todayPhase==='l' ? `이번 주는 황체기라 트러블 날 수 있어. ${s.item.name}는 ${dd}일 뒤, 난포기로 잡아뒀어.`
+         : todayPhase==='m' ? `지금은 쉬는 주야. ${s.item.name}는 ${dd}일 뒤에 부를게.`
+         : `${s.item.name} ${dd}일 뒤야. 지금 구간이 딱 좋아.`; }
+  $('clockLine').textContent=line;
+  // log select + gauge
+  const sel=$('logItem'); sel.innerHTML = S.routine.map(c=>`<option>${c.name}</option>`).join('') + '<option>기타</option>';
+  if(!$('logDate').value) $('logDate').value=iso(today);
+  renderLogs();
+}
+function iso(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+$('lastPeriod').addEventListener('change',e=>{ S.lastPeriod=e.target.value||null; saveState(); renderClock(); });
+$('cycleLen').addEventListener('change',e=>{ S.cycleLen=Math.min(40,Math.max(21,+e.target.value||28)); saveState(); renderClock(); });
+function switchTab(t){ $('calPane').hidden=t!=='cal'; $('logPane').hidden=t!=='log'; $('tabCal').setAttribute('aria-selected',t==='cal'); $('tabLog').setAttribute('aria-selected',t==='log'); }
+function addLog(){ const item=$('logItem').value, date=$('logDate').value, cost=+$('logCost').value||0; if(!date){ toast('날짜를 골라줘'); return; }
+  S.logs.push({item,date,cost}); $('logCost').value=''; saveState(); renderClock(); toast('기록했어. 잘했어.'); switchTab('cal'); }
+function renderLogs(){
+  const y=new Date().getFullYear(); const logs=S.logs.filter(l=>l.date.startsWith(String(y))).sort((a,b)=>b.date.localeCompare(a.date));
+  $('logList').innerHTML = logs.length ? logs.map(l=>`<div><b>${l.item}</b><span>${l.date.slice(5).replace('-','/')}${l.cost?' · '+won(l.cost):''}</span></div>`).join('') : '<div><span>아직 기록이 없어. 오늘 한 게 있으면 남겨.</span></div>';
+  const spent=logs.reduce((s,l)=>s+l.cost,0); const pct=S.budget?Math.min(100,spent/S.budget*100):0;
+  $('gauge').querySelector('b').style.width=pct+'%'; $('gauge').classList.toggle('over',spent>S.budget);
+  $('gaugeText').textContent=`${won(spent)} / ${won(S.budget)}`;
+}
+function renderS10(){ const k=S.keeps.map(x=>NAME[x]); $('s10line').textContent = k.length ? `지키기로 한 ${k.join('이랑 ')}, 유지되고 있어. 루틴 그대로 가자.` : '지키기로 한 것부터 정하자. 그래야 다시 볼 게 생겨.'; }
+
+// ---------- persistence (per-viewer convenience only) ----------
+function saveState(){ try{ localStorage.setItem('unni-proto', JSON.stringify({keeps:S.keeps,strengths:S.strengths,moods:S.moods,budget:S.budget,existing:S.existing,logs:S.logs,lastPeriod:S.lastPeriod,cycleLen:S.cycleLen,photos:S.photos})); }catch(e){} }
+function loadState(){ try{ const j=JSON.parse(localStorage.getItem('unni-proto')||'null'); if(j) Object.assign(S,j); }catch(e){} }
+function resetAll(){ try{ localStorage.removeItem('unni-proto'); }catch(e){} location.reload(); }
+
+loadState();
+if(!S.photos) S.photos=0;
+syncBudget(S.budget);
+go('s0');
+</script>
