@@ -447,11 +447,16 @@ $('budgetNum').addEventListener('input',e=>syncBudget(+e.target.value||0));
 function buildRoutine(){
   const keeps = S.keeps.length ? S.keeps : S.strengths.slice(0,1);
   const base = CATALOG.filter(c=>c.kind==='home' && (c.serves.includes('*') || c.serves.some(k=>keeps.includes(k))));
+  // 우선순위: 이미 하는 것 → 지킬 것 중 첫 번째에 직접 닿는 것 → 지킬 것을 더 많이 지키는 것 → 싼 것.
+  // (검사 2에서 드러난 문제: 비용순으로만 고르면 '피부 결'을 지키기로 했는데 스킨부스터 대신 싼 보톡스가 먼저 들어갔다)
+  const direct = c => c.serves.includes(keeps[0]) ? 1 : 0;
+  const served = c => c.serves.filter(k=>keeps.includes(k)).length;
   const tx = CATALOG.filter(c=>c.kind==='tx' && c.serves.some(k=>keeps.includes(k)))
-    .sort((a,b)=>{ const ea=S.existing.includes(a.name.split('(')[0]); const eb=S.existing.includes(b.name.split('(')[0]); if(ea!==eb) return ea?-1:1; return a.cost-b.cost; });
-  // 가장 직접적인 시술을 먼저, 예산 안에서 채운다. 리프팅은 예산이 넉넉할 때만.
+    .sort((a,b)=>{ const ea=S.existing.includes(a.name.split('(')[0]); const eb=S.existing.includes(b.name.split('(')[0]); if(ea!==eb) return ea?-1:1;
+      if(direct(a)!==direct(b)) return direct(b)-direct(a); if(served(a)!==served(b)) return served(b)-served(a); return a.cost-b.cost; });
+  // 예산은 상한. 한 항목이 예산의 40%를 넘으면 넣지 않는다 (한 방에 몰아 쓰지 않는 지속가능성 원칙).
   let sum = base.reduce((s,c)=>s+c.cost,0); const picked=[...base];
-  for(const c of tx){ if(c.id==='ult' && S.budget<400) continue; if(sum+c.cost<=S.budget){ picked.push(c); sum+=c.cost; } }
+  for(const c of tx){ if(c.cost > S.budget*0.4) continue; if(sum+c.cost<=S.budget){ picked.push(c); sum+=c.cost; } }
   S.routine=picked; S.sum=sum;
   const tier = S.budget>=500?'rich':S.budget>=200?'mid':'tight';
   const keepNames = keeps.map(k=>NAME[k]).join('이랑 ');
